@@ -5,22 +5,83 @@ var _ List[string] = (*ArrayList[string])(nil)
 type ArrayList[T comparable] struct {
 	capacity int
 	size     int
-	data     []T
-	Comparer BinarySearchComparer[T]
+	data     []interface{}
+	Comparer BinarySearchComparer
 }
 
-func (c *ArrayList[T]) BinarySearch(startIndex int, offsets int, element T, comparer BinarySearchComparer[T]) int {
-	low := 0
-	high := c.size - 1
-	for low <= high {
-		mid := (low + high) / 2
-		cur := c.data[mid]
-		if !comparer(cur, element) {
-			low = mid + 1
-			high = mid - 1
+func (c *ArrayList[T]) BinarySearch(index int, length int, value interface{}, comparer BinarySearchComparer) (int, error) {
+	return BinarySearch(c.data, index, length, value, comparer)
+}
+
+func (c *ArrayList[T]) increaseCapacity() {
+	if c.capacity == 0 {
+		c.capacity = 4
+	} else {
+		c.capacity = c.capacity * 2
+	}
+	c.data = append(c.data, make([]interface{}, c.capacity)...)
+}
+
+func (c *ArrayList[T]) Add(item T) {
+	if c.size == c.capacity {
+		c.increaseCapacity()
+	}
+	c.data[c.size] = item
+	c.size++
+}
+
+func (c *ArrayList[T]) RemoveAt(itemIndex int) {
+	if itemIndex == -1 {
+		return
+	}
+	for i := itemIndex; i < c.size-1; i++ {
+		if i == c.size-1 {
+			c.data[i] = nil
 		} else {
-			return mid
+			c.data[i] = c.data[i+1]
 		}
 	}
-	return -1
+	c.size--
+}
+
+func (c *ArrayList[T]) Remove(item T) {
+	itemIndex, err := c.BinarySearch(0, c.size, item, c.Comparer)
+	if err != nil {
+		panic(err)
+	}
+	c.RemoveAt(itemIndex)
+}
+
+func (c *ArrayList[T]) Contains(item T) bool {
+	itemIndex, err := c.BinarySearch(0, c.size, item, c.Comparer)
+	if err != nil {
+		panic(err)
+	}
+	return itemIndex != -1
+}
+
+func (c *ArrayList[T]) IndexOf(item T) int {
+	itemIndex, err := c.BinarySearch(0, c.size, item, c.Comparer)
+	if err != nil {
+		panic(err)
+	}
+	return itemIndex
+}
+
+func (c *ArrayList[T]) Get(i int) T {
+	return c.data[i].(T)
+}
+
+func (c *ArrayList[T]) Set(i int, item T) {
+	c.data[i] = item
+}
+
+func (c *ArrayList[T]) Size() int {
+	return c.size
+}
+
+func (c *ArrayList[T]) Clear() {
+	c.capacity = 4
+	c.data = make([]interface{}, c.capacity)
+	c.size = 0
 }

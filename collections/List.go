@@ -4,9 +4,11 @@ type List[T comparable] interface {
 	Iterator[T]
 	Add(T)
 	Remove(T)
+	RemoveAt(int)
 	Contains(T) bool
-	Size() int
-	Clear()
+	IndexOf(T) int
 	Get(int) T
 	Set(int, T)
+	Size() int
+	Clear()
 }
