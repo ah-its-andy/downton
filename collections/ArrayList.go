@@ -17,6 +17,27 @@ type ArrayList[T any] struct {
 	Comparer BinarySearchComparer
 }
 
+type arrayListIterator[T any] struct {
+	list   *ArrayList[T]
+	curPos int
+}
+
+func (iterator *arrayListIterator[T]) MoveNext() bool {
+	if iterator.curPos < iterator.list.size {
+		iterator.curPos++
+		return true
+	}
+	return false
+}
+
+func (iterator *arrayListIterator[T]) Current() *T {
+	return iterator.list.data[iterator.curPos].(*T)
+}
+
+func (iterator *arrayListIterator[T]) Reset() {
+	iterator.curPos = 0
+}
+
 func (c *ArrayList[T]) BinarySearch(index int, length int, value interface{}, comparer BinarySearchComparer) (int, error) {
 	return BinarySearch(c.data, index, length, value, comparer)
 }
@@ -30,7 +51,7 @@ func (c *ArrayList[T]) increaseCapacity() {
 	c.data = append(c.data, make([]interface{}, c.capacity)...)
 }
 
-func (c *ArrayList[T]) Add(item T) {
+func (c *ArrayList[T]) Add(item *T) {
 	if c.size == c.capacity {
 		c.increaseCapacity()
 	}
@@ -52,7 +73,7 @@ func (c *ArrayList[T]) RemoveAt(itemIndex int) {
 	c.size--
 }
 
-func (c *ArrayList[T]) Remove(item T) {
+func (c *ArrayList[T]) Remove(item *T) {
 	itemIndex, err := c.BinarySearch(0, c.size, item, c.Comparer)
 	if err != nil {
 		panic(err)
@@ -60,7 +81,7 @@ func (c *ArrayList[T]) Remove(item T) {
 	c.RemoveAt(itemIndex)
 }
 
-func (c *ArrayList[T]) Contains(item T) bool {
+func (c *ArrayList[T]) Contains(item *T) bool {
 	itemIndex, err := c.BinarySearch(0, c.size, item, c.Comparer)
 	if err != nil {
 		panic(err)
@@ -68,7 +89,7 @@ func (c *ArrayList[T]) Contains(item T) bool {
 	return itemIndex != -1
 }
 
-func (c *ArrayList[T]) IndexOf(item T) int {
+func (c *ArrayList[T]) IndexOf(item *T) int {
 	itemIndex, err := c.BinarySearch(0, c.size, item, c.Comparer)
 	if err != nil {
 		panic(err)
@@ -76,11 +97,11 @@ func (c *ArrayList[T]) IndexOf(item T) int {
 	return itemIndex
 }
 
-func (c *ArrayList[T]) Get(i int) T {
-	return c.data[i].(T)
+func (c *ArrayList[T]) Get(i int) *T {
+	return c.data[i].(*T)
 }
 
-func (c *ArrayList[T]) Set(i int, item T) {
+func (c *ArrayList[T]) Set(i int, item *T) {
 	c.data[i] = item
 }
 
@@ -94,14 +115,31 @@ func (c *ArrayList[T]) Clear() {
 	c.size = 0
 }
 
-func (c *ArrayList[T]) ToArray() []T {
-	if c.size == 0 {
-		return []T{}
+func (c *ArrayList[T]) GetIterator() Iterator[T] {
+	return &arrayListIterator[T]{
+		list:   c,
+		curPos: 0,
 	}
-	dest := make([]T, c.size)
+}
+
+func (c *ArrayList[T]) ToArray() []*T {
+	if c.size == 0 {
+		return []*T{}
+	}
+	dest := make([]*T, c.size)
 
 	for i := 0; i < c.size; i++ {
-		dest[i] = c.data[i].(T)
+		dest[i] = c.data[i].(*T)
 	}
+	return dest
+}
+
+func (c *ArrayList[T]) ToList() List[T] {
+	dest := &ArrayList[T]{
+		size:     c.size,
+		capacity: c.capacity,
+		data:     make([]interface{}, c.capacity),
+	}
+	copy(dest.data, c.data)
 	return dest
 }

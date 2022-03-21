@@ -2,7 +2,7 @@ package collections
 
 import "testing"
 
-func Test_BinarySearch_Validations(t *testing.T) {
+func Test_ArrayList_BinarySearch_Validations(t *testing.T) {
 	count := 4
 	list := NewArrayList[string](count).(*ArrayList[string])
 	element := ""
@@ -14,4 +14,9 @@ func Test_BinarySearch_Validations(t *testing.T) {
 	if err != ErrBinarySearchInvalidOffLen {
 		t.Error("Expected ErrBinarySearchInvalidOffLen, but got", err)
 	}
+}
+
+func Test_ArrayList_BinarySearch_ForEveryItemWithDuplicates {
+	count := 4
+	
 }
