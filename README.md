@@ -60,4 +60,9 @@
   - HostBuilder
   - Global panic&recover handler
   - Dependency Injection Supportive with ServiceContext
-  - 
+
+- Web : Http server 
+  - WebHost : Hosting implemention
+  - Middlewares : Http middleware 
+  - Request parameters auto-binding
+
