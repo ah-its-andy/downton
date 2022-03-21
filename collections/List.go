@@ -1,11 +1,12 @@
 package collections
 
-type List[T interface{}] interface {
+type List[T comparable] interface {
 	Iterator[T]
 	Add(T)
 	Remove(T)
 	Contains(T) bool
 	Size() int
 	Clear()
-	GetCapacity() int
+	Get(int) T
+	Set(int, T)
 }

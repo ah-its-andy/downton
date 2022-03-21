@@ -1,6 +1,6 @@
 package collections
 
-type Set[T interface{}] interface {
+type Set[T comparable] interface {
 	Iterator[T]
 
 	Add(T)

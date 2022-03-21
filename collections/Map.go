@@ -1,6 +1,6 @@
 package collections
 
-type Map[K interface{}, V interface{}] interface {
+type Map[K comparable, V interface{}] interface {
 	Iterator[KvPair[K, V]]
 	Put(K, V)
 	Get(K) V
