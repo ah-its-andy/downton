@@ -1,6 +1,6 @@
 package collections
 
-type List[T comparable] interface {
+type List[T any] interface {
 	Iterator[T]
 	Add(T)
 	Remove(T)

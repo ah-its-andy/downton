@@ -2,7 +2,15 @@ package collections
 
 var _ List[string] = (*ArrayList[string])(nil)
 
-type ArrayList[T comparable] struct {
+func NewArrayList[T any](capacity int) List[T] {
+	return &ArrayList[T]{
+		capacity: capacity,
+		size:     0,
+		data:     make([]interface{}, capacity),
+	}
+}
+
+type ArrayList[T any] struct {
 	capacity int
 	size     int
 	data     []interface{}
@@ -84,4 +92,16 @@ func (c *ArrayList[T]) Clear() {
 	c.capacity = 4
 	c.data = make([]interface{}, c.capacity)
 	c.size = 0
+}
+
+func (c *ArrayList[T]) ToArray() []T {
+	if c.size == 0 {
+		return []T{}
+	}
+	dest := make([]T, c.size)
+
+	for i := 0; i < c.size; i++ {
+		dest[i] = c.data[i].(T)
+	}
+	return dest
 }

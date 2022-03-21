@@ -1,5 +1,5 @@
 package collections
 
-type Iterator[T interface{}] interface {
+type Iterator[T any] interface {
 	ToArray() []T
 }
