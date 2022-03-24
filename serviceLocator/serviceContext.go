@@ -92,6 +92,14 @@ func newScopeCtx(parent ServiceContext, services map[string]*ServiceInfo, instan
 	for name, instance := range instances {
 		ctx.signletonInstances[name] = instance
 	}
+	err := ctx.initServices()
+	if err != nil {
+		panic(err)
+	}
+	err = ctx.initReferences()
+	if err != nil {
+		panic(err)
+	}
 	return ctx
 }
 

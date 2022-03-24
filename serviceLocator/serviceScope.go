@@ -18,7 +18,7 @@ type rootSvcScope struct {
 }
 
 func (scope *rootSvcScope) CreateScope() ServiceScope {
-	ctx := newScopeCtx(scope.rootSvcCtx, scope.services, scope.instances)
+	ctx := newScopeCtx(&scope.rootSvcCtx, scope.services, scope.instances)
 	return &scopedSvcScope{
 		scopeCtx: *ctx,
 	}
@@ -50,7 +50,7 @@ type scopedSvcScope struct {
 }
 
 func (scope *scopedSvcScope) CreateScope() ServiceScope {
-	ctx := newScopeCtx(scope.scopeCtx, scope.services, scope.signletonInstances)
+	ctx := newScopeCtx(&scope.scopeCtx, scope.services, scope.signletonInstances)
 	return &scopedSvcScope{
 		scopeCtx: *ctx,
 	}

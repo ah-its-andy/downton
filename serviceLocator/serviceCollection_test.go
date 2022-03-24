@@ -19,6 +19,19 @@ type ServiceCollectionTestReferenceService struct {
 	ShouldIgnore *ServiceCollectionTestSingletonService `inject:"ignore"`
 	NotPtr       ServiceCollectionTestSingletonService
 	ShouldInject *ServiceCollectionTestSingletonService
+	privateField *ServiceCollectionTestSingletonService
+}
+
+type ServiceCollectionTestCycleReference struct {
+	DependOn *ServiceCollectionTestCycleDependOnCycleReference
+}
+
+type ServiceCollectionTestCycleDependOnCycleReference struct {
+	CycleReference *ServiceCollectionTestCycleReference
+}
+
+type ServiceCollectionTestRootLifetime struct {
+	ScopeService *ServiceCollectionTestScopeService
 }
 
 func Test_ServiceCollection_Constructor(t *testing.T) {
@@ -145,5 +158,85 @@ func Test_ServiceCollection_ResolveDependencies(t *testing.T) {
 	}
 	if !shouldInject {
 		t.Error("shouldInject should be resolved")
+	}
+}
+
+func Test_ServiceCollection_CycleReference(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Error("expect panic, but passed")
+		} else {
+			t.Logf("passed: %v", err)
+		}
+	}()
+
+	services := NewServiceCollection()
+	services.AddSingleton(&ServiceCollectionTestCycleReference{})
+	services.AddSingleton(&ServiceCollectionTestCycleDependOnCycleReference{})
+	services.Build()
+}
+
+func Test_ServiceCollection_Build(t *testing.T) {
+	services := NewServiceCollection()
+	services.AddSingleton(&ServiceCollectionTestSingletonService{})
+	services.AddScope(&ServiceCollectionTestScopeService{})
+	services.AddTransient(&ServiceCollectionTestTransientService{})
+	services.Build()
+}
+
+func Test_ServiceCollection_RootScopeLifetime(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Error("expect panic, but passed")
+		} else {
+			t.Logf("passed: %v", err)
+		}
+	}()
+	services := NewServiceCollection()
+	services.AddSingleton(&ServiceCollectionTestRootLifetime{})
+	services.AddScope(&ServiceCollectionTestScopeService{})
+	services.Build()
+}
+
+func Test_ServiceCollection_DependsOnUnregistered(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Error("expect panic, but passed")
+		} else {
+			t.Logf("passed: %v", err)
+		}
+	}()
+	services := NewServiceCollection()
+	services.AddSingleton(&ServiceCollectionTestRootLifetime{})
+	services.Build()
+}
+
+func Test_ServiceScope_CreateScope(t *testing.T) {
+	services := NewServiceCollection()
+	services.AddSingleton(&ServiceCollectionTestSingletonService{})
+	services.AddScope(&ServiceCollectionTestScopeService{})
+	services.AddTransient(&ServiceCollectionTestTransientService{})
+
+	root := services.Build().(*rootSvcScope)
+	scope := root.CreateScope().(*scopedSvcScope)
+	if scope.parent != (&root.rootSvcCtx) {
+		t.Error("parent should be root")
+	}
+	if len(scope.signletonInstances) != len(root.instances) {
+		t.Error("scope should have same number of instances as root")
+	}
+	if len(scope.scopeInstances) != 1 {
+		t.Error("scope should have 1 scoped instances")
+	}
+
+	scopeScope := scope.CreateScope().(*scopedSvcScope)
+	if scopeScope.parent != &scope.scopeCtx {
+		t.Error("parent should be scope")
+	}
+	if len(scopeScope.signletonInstances) != len(scope.signletonInstances) {
+		t.Error("scope should have same number of instances as scope")
+	}
+	if len(scopeScope.scopeInstances) != len(scope.scopeInstances) {
+		t.Error("scope should have same number of instances as scope")
 	}
 }
