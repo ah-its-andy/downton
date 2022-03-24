@@ -33,6 +33,12 @@ type svcCollection struct {
 	services map[string]*ServiceInfo
 }
 
+func NewServiceCollection() ServiceCollection {
+	return &svcCollection{
+		services: make(map[string]*ServiceInfo),
+	}
+}
+
 func (services *svcCollection) AddService(serviceInfo *ServiceInfo) {
 	serviceName := getTypeFullName(serviceInfo.ServiceType)
 	if serviceInfo.ServiceType.Kind() != reflect.Ptr {
@@ -50,7 +56,6 @@ func (services *svcCollection) AddLifetimeService(service any, lifetime int) {
 		ServiceType: reflect.TypeOf(service),
 		Lifetime:    lifetime,
 	}
-	resolveServiceDependencies(serviceInfo)
 	services.AddService(serviceInfo)
 }
 
@@ -110,8 +115,9 @@ func (services *svcCollection) Build() ServiceScope {
 }
 
 func resolveServiceDependencies(serviceInfo *ServiceInfo) {
-	for i := 0; i < serviceInfo.ServiceType.NumField(); i++ {
-		field := serviceInfo.ServiceType.Field(i)
+	elemType := getElemType(serviceInfo.ServiceType)
+	for i := 0; i < elemType.NumField(); i++ {
+		field := elemType.Field(i)
 		if field.Type.Kind() != reflect.Ptr {
 			continue
 		}
@@ -119,7 +125,7 @@ func resolveServiceDependencies(serviceInfo *ServiceInfo) {
 			continue
 		}
 		serviceInfo.references = append(serviceInfo.references, &ServiceReference{
-			ReferenceType: field.Type.Elem(),
+			ReferenceType: field.Type,
 			FieldName:     field.Name,
 		})
 	}

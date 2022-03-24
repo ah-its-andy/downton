@@ -39,8 +39,10 @@ func (ctx *rootSvcCtx) initServices() error {
 		if s.Lifetime != LifetimeSingleton {
 			continue
 		}
-		instance := reflect.New(s.ServiceType).Interface()
-		ctx.instances[name] = instance
+		elemType := getElemType(s.ServiceType)
+		instance := reflect.New(elemType)
+		interfaceInstance := instance.Interface()
+		ctx.instances[name] = interfaceInstance
 	}
 	return nil
 }
@@ -50,7 +52,8 @@ func (ctx *rootSvcCtx) initReferences() error {
 		serviceInfo := ctx.services[name]
 		for _, ref := range serviceInfo.references {
 			refFullName := getTypeFullName(ref.ReferenceType)
-			field := reflect.ValueOf(instance).Elem().FieldByName(ref.FieldName)
+			elemValue := getElemValue(reflect.ValueOf(instance))
+			field := elemValue.FieldByName(ref.FieldName)
 			if !field.IsValid() {
 				return errors.New(fmt.Sprintf("%s has no field %s", name, ref.FieldName))
 			}
@@ -108,7 +111,8 @@ func (ctx *scopeCtx) initReferences() error {
 		serviceInfo := ctx.services[name]
 		for _, ref := range serviceInfo.references {
 			refFullName := getTypeFullName(ref.ReferenceType)
-			field := reflect.ValueOf(instance).Elem().FieldByName(ref.FieldName)
+			elemValue := getElemValue(reflect.ValueOf(instance))
+			field := elemValue.FieldByName(ref.FieldName)
 			if !field.IsValid() {
 				return errors.New(fmt.Sprintf("%s has no field %s", name, ref.FieldName))
 			}
@@ -137,7 +141,8 @@ func (ctx *scopeCtx) CreateTransientService(serviceInfo *ServiceInfo) (any, erro
 	transientInstance := reflect.New(serviceInfo.ServiceType).Interface()
 	for _, transientRef := range serviceInfo.references {
 		refFullName := getTypeFullName(transientRef.ReferenceType)
-		field := reflect.ValueOf(transientInstance).Elem().FieldByName(transientRef.FieldName)
+		elemValue := getElemValue(reflect.ValueOf(transientInstance))
+		field := elemValue.FieldByName(transientRef.FieldName)
 		if !field.IsValid() {
 			return nil, errors.New(fmt.Sprintf("%s has no field %s", serviceName, transientRef.FieldName))
 		}
@@ -168,4 +173,18 @@ func getTypeFullName(t reflect.Type) string {
 		v = v.Elem()
 	}
 	return v.PkgPath() + "." + v.Name()
+}
+
+func getElemType(t reflect.Type) reflect.Type {
+	if t.Kind() != reflect.Ptr {
+		return t
+	}
+	return getElemType(t.Elem())
+}
+
+func getElemValue(v reflect.Value) reflect.Value {
+	if v.Kind() != reflect.Ptr {
+		return v
+	}
+	return getElemValue(v.Elem())
 }

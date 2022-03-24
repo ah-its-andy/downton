@@ -32,7 +32,7 @@ func (scope *rootSvcScope) GetService(service any) any {
 	return svc
 }
 func (scope *rootSvcScope) GetRequiredService(service any) (any, error) {
-	serviceType := reflect.TypeOf(service).Elem()
+	serviceType := reflect.TypeOf(service)
 	serviceName := getTypeFullName(serviceType)
 	if service, ok := scope.instances[serviceName]; ok {
 		return service, nil
@@ -57,7 +57,7 @@ func (scope *scopedSvcScope) CreateScope() ServiceScope {
 }
 
 func (scope *scopedSvcScope) GetRequiredService(service any) (any, error) {
-	serviceType := reflect.TypeOf(service).Elem()
+	serviceType := reflect.TypeOf(service)
 	serviceName := getTypeFullName(serviceType)
 	if service, ok := scope.signletonInstances[serviceName]; ok {
 		return service, nil
