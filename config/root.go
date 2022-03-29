@@ -85,7 +85,6 @@ func (root *ConfigurationRoot) Providers() []core.ConfigurationProvider {
 func (root *ConfigurationRoot) GetSection(k string) core.ConfigurationSection {
 	return NewConfigurationSection(root, k)
 }
-
 func (root *ConfigurationRoot) TryGetString(k string) (string, bool) {
 	return root.TryGetConfiguration(root.providers, k)
 }

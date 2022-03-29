@@ -16,6 +16,7 @@ func NewConfigurationSection(root core.ConfigurationRoot, path string) core.Conf
 	}
 }
 
+// ConfigurationSection Implementations
 func (section *ConfigurationSection) Key() string {
 	return section.k
 }

@@ -1,5 +1,7 @@
 package collections
 
+import "sort"
+
 func ForEach[T any, C Iteratable[T]](src C, f func(T)) {
 	it := src.GetIterator()
 	for it.MoveNext() {
@@ -37,4 +39,14 @@ func Distinct[T any, C Collection[T]](src C, comparer BinarySearchComparer) Coll
 		prev = it.Current()
 	}
 	return dest
+}
+
+func OrderBy[T any, C Collection[T]](src C, comparer BinarySearchComparer) Collection[T] {
+	items := src.ToArray()
+	sort.Slice(items, func(i, j int) bool {
+		return comparer(items[i], items[j]) < 0
+	})
+	ret := NewArrayList[T](0)
+	ret.AddRange(items...)
+	return ret
 }
