@@ -8,11 +8,6 @@ import (
 	"github.com/ah-its-andy/downton/core"
 )
 
-// builder apis
-func AddCommandLine(builder core.ConfigurationBuilder, args []string, switchMapping map[string]string) {
-	builder.AddSource(NewCmdLineConfigurationSource(switchMapping, args))
-}
-
 type CmdLineConfigurationSource struct {
 	switchMapping map[string]string
 	args          []string

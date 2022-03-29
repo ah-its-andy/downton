@@ -9,6 +9,10 @@ import (
 	"github.com/ah-its-andy/downton/core"
 )
 
+func NewJSONConfigurationSource(fileProvider core.FileProvider) *BinaryConfigurationSource {
+	return NewBinaryConfigurationSource(fileProvider, buildJSONConfigurationProvider)
+}
+
 type JSONConfigurationProvider struct {
 	BinaryConfigurationProvider
 }

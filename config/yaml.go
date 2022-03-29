@@ -9,6 +9,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+func NewYamlConfigurationSource(fileProvider core.FileProvider) *BinaryConfigurationSource {
+	return NewBinaryConfigurationSource(fileProvider, buildYamlProvider)
+}
+
 type YamlConfigurationProvider struct {
 	BinaryConfigurationProvider
 }
