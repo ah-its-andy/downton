@@ -46,19 +46,13 @@ func (root *ConfigurationRoot) SetConfiguration(providers []core.ConfigurationPr
 }
 
 func (root *ConfigurationRoot) GetChildrenImplementation(path string) []core.ConfigurationSection {
-	results := collections.NewArrayList[string](0)
+	var results collections.List[string] = collections.NewArrayList[string](0)
 	for _, provider := range root.providers {
 		ks := provider.GetChildKeys(results.ToArray(), path)
 		results = collections.NewArrayList[string](len(ks))
 		results.AddRange(ks...)
 	}
-	results = collections.Distinct[string](results, func(a1, a2 any) int {
-		if a1 == a2 {
-			return 0
-		} else {
-			return -1
-		}
-	}).ToList()
+	results = collections.Distinct[string](results, collections.StringComparison).ToList()
 
 	sections := make([]core.ConfigurationSection, results.Size())
 	for i, k := range results.ToArray() {

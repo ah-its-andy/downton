@@ -3,7 +3,7 @@ package httpabstracts
 import (
 	"context"
 
-	servicelocator "github.com/ah-its-andy/downton/serviceLocator"
+	"github.com/ah-its-andy/downton/core"
 )
 
 type HttpContext struct {
@@ -17,7 +17,7 @@ type HttpContext struct {
 
 	CancelationContext context.Context
 
-	ServiceScope servicelocator.ServiceScope
+	ServiceScope core.ServiceScope
 }
 
 func (ctx *HttpContext) Cancel() error {

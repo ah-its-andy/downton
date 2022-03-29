@@ -5,5 +5,4 @@ type Collection[T any] interface {
 
 	ToList() List[T]
 	ToArray() []T
-	Values() []T
 }

@@ -1,8 +1,10 @@
 package hosting
 
-import servicelocator "github.com/ah-its-andy/downton/serviceLocator"
+import (
+	"github.com/ah-its-andy/downton/core"
+)
 
 type WebHostBuilder interface {
 	UseEnvironment(env string) WebHostBuilder
-	ConfigureServices(func(servicelocator.ServiceCollection)) WebHostBuilder
+	ConfigureServices(func(core.ServiceCollection)) WebHostBuilder
 }

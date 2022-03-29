@@ -2,7 +2,7 @@ package collections
 
 var _ List[string] = (*ArrayList[string])(nil)
 
-func NewArrayList[T any](capacity int) List[T] {
+func NewArrayList[T any](capacity int) *ArrayList[T] {
 	return &ArrayList[T]{
 		capacity: capacity,
 		size:     0,
@@ -150,18 +150,5 @@ func (c *ArrayList[T]) ToList() List[T] {
 		data:     make([]any, c.capacity),
 	}
 	copy(dest.data, c.data)
-	return dest
-}
-
-func (c *ArrayList[T]) Values() []T {
-	if c.size == 0 {
-		return []T{}
-	}
-	dest := make([]T, c.size)
-
-	for i := 0; i < c.size; i++ {
-		item := c.data[i].(T)
-		dest[i] = item
-	}
 	return dest
 }

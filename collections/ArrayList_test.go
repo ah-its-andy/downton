@@ -4,7 +4,7 @@ import "testing"
 
 func Test_ArrayList_BinarySearch_Validations(t *testing.T) {
 	count := 4
-	list := NewArrayList[string](count).(*ArrayList[string])
+	list := NewArrayList[string](count)
 	element := ""
 	_, err := list.BinarySearch(0, -1, element, nil)
 	if err != ErrBinarySearchLengthNeedNonNegNum {

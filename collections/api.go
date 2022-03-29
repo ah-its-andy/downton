@@ -29,11 +29,21 @@ func Count[T any, C Iteratable[T]](src C, predicate func(T) bool) int {
 }
 
 func Distinct[T any, C Collection[T]](src C, comparer BinarySearchComparer) Collection[T] {
+	innerComparer := comparer
+	if innerComparer == nil {
+		innerComparer = func(a1, a2 any) int {
+			if a1 == a2 {
+				return 0
+			} else {
+				return -1
+			}
+		}
+	}
 	dest := NewArrayList[T](0)
 	it := src.GetIterator()
 	prev := it.Current()
 	for it.MoveNext() {
-		if comparer(prev, it.Current()) != 0 {
+		if innerComparer(prev, it.Current()) != 0 {
 			dest.Add(prev)
 		}
 		prev = it.Current()
@@ -41,7 +51,7 @@ func Distinct[T any, C Collection[T]](src C, comparer BinarySearchComparer) Coll
 	return dest
 }
 
-func OrderBy[T any, C Collection[T]](src C, comparer BinarySearchComparer) Collection[T] {
+func OrderBy[T any](src Collection[T], comparer BinarySearchComparer) Collection[T] {
 	items := src.ToArray()
 	sort.Slice(items, func(i, j int) bool {
 		return comparer(items[i], items[j]) < 0

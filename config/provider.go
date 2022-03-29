@@ -86,7 +86,7 @@ func (provider *ConfigurationProvider) Load() {
 
 }
 func (provider *ConfigurationProvider) GetChildKeys(earlierKeys []string, parentPath string) []string {
-	results := collections.NewArrayList[string](0)
+	var results collections.List[string] = collections.NewArrayList[string](0)
 	if parentPath == "" {
 		for k, _ := range provider.data {
 			results.Add(segment(k, 0))

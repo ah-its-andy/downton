@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/ah-its-andy/downton/core"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func NewYamlConfigurationSource(fileProvider core.FileProvider) *BinaryConfigurationSource {
