@@ -3,6 +3,8 @@ package servicelocator
 import (
 	"reflect"
 	"testing"
+
+	"github.com/ah-its-andy/downton/core"
 )
 
 type ServiceCollectionTestSingletonService struct {
@@ -48,7 +50,7 @@ func TestServiceCollectionAddService(t *testing.T) {
 		}
 	}()
 
-	serviceInfo := &ServiceInfo{
+	serviceInfo := &core.ServiceInfo{
 		ServiceType: reflect.TypeOf(&ServiceCollectionTestSingletonService{}),
 		Lifetime:    LifetimeSingleton,
 	}
@@ -63,7 +65,7 @@ func TestServiceCollectionAddServiceNotPointer(t *testing.T) {
 		}
 	}()
 
-	serviceInfo := &ServiceInfo{
+	serviceInfo := &core.ServiceInfo{
 		ServiceType: reflect.TypeOf(ServiceCollectionTestSingletonService{}),
 		Lifetime:    LifetimeSingleton,
 	}
@@ -77,7 +79,7 @@ func TestServiceCollectionAddServiceDeplicate(t *testing.T) {
 			t.Error("expect panic, but passed")
 		}
 	}()
-	serviceInfo := &ServiceInfo{
+	serviceInfo := &core.ServiceInfo{
 		ServiceType: reflect.TypeOf(ServiceCollectionTestSingletonService{}),
 		Lifetime:    LifetimeSingleton,
 	}
@@ -137,7 +139,7 @@ func Test_ServiceCollection_ResolveDependencies(t *testing.T) {
 	services := NewServiceCollection()
 	services.AddSingleton(&ServiceCollectionTestSingletonService{})
 
-	serviceInfo := &ServiceInfo{
+	serviceInfo := &core.ServiceInfo{
 		ServiceType: reflect.TypeOf(&ServiceCollectionTestReferenceService{}),
 		Lifetime:    LifetimeSingleton,
 	}
@@ -145,7 +147,7 @@ func Test_ServiceCollection_ResolveDependencies(t *testing.T) {
 	services.Build()
 
 	shouldInject := false
-	for _, depends := range serviceInfo.references {
+	for _, depends := range serviceInfo.References {
 		if depends.FieldName == "ShouldIgnore" {
 			t.Error("ShouldIgnore should be ignored")
 		} else if depends.FieldName == "NotPtr" {

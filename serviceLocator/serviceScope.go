@@ -4,20 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+
+	"github.com/ah-its-andy/downton/core"
 )
-
-type ServiceScope interface {
-	GetRequiredService(service any) (any, error)
-	GetService(service any) any
-
-	CreateScope() ServiceScope
-}
 
 type rootSvcScope struct {
 	rootSvcCtx
 }
 
-func (scope *rootSvcScope) CreateScope() ServiceScope {
+func (scope *rootSvcScope) CreateScope() core.ServiceScope {
 	ctx := newScopeCtx(&scope.rootSvcCtx, scope.services, scope.instances)
 	return &scopedSvcScope{
 		scopeCtx: *ctx,
@@ -45,11 +40,32 @@ func (scope *rootSvcScope) GetRequiredService(service any) (any, error) {
 	}
 }
 
+func (scope *rootSvcScope) GetServices(service any) []any {
+	return GetServices(scope, scope.services, service)
+}
+
+func GetServices(scope core.ServiceScope, serviceInfos map[string]*core.ServiceInfo, service any) []any {
+	t := reflect.TypeOf(service)
+	if t.Kind() != reflect.Interface {
+		panic(fmt.Sprintf("ServiceScope.GetServices only accept interface, but %s is %s", t.Name(), t.Kind()))
+	}
+	results := make([]any, 0)
+	for _, serviceInfo := range serviceInfos {
+		if serviceInfo.ServiceType.Implements(t) {
+			svc := scope.GetService(serviceInfo.ServiceType)
+			if svc != nil {
+				results = append(results, svc)
+			}
+		}
+	}
+	return results
+}
+
 type scopedSvcScope struct {
 	scopeCtx
 }
 
-func (scope *scopedSvcScope) CreateScope() ServiceScope {
+func (scope *scopedSvcScope) CreateScope() core.ServiceScope {
 	ctx := newScopeCtx(&scope.scopeCtx, scope.services, scope.signletonInstances)
 	return &scopedSvcScope{
 		scopeCtx: *ctx,
@@ -79,4 +95,8 @@ func (scope *scopedSvcScope) GetService(service any) any {
 		return nil
 	}
 	return svc
+}
+
+func (scope *scopedSvcScope) GetServices(service any) []any {
+	return GetServices(scope, scope.services, service)
 }

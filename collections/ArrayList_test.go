@@ -15,8 +15,3 @@ func Test_ArrayList_BinarySearch_Validations(t *testing.T) {
 		t.Error("Expected ErrBinarySearchInvalidOffLen, but got", err)
 	}
 }
-
-func Test_ArrayList_BinarySearch_ForEveryItemWithDuplicates {
-	count := 4
-	
-}

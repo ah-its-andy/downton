@@ -7,13 +7,13 @@ import (
 	"github.com/ah-its-andy/downton/core"
 )
 
-type BinarySearchComparer func(interface{}, interface{}) int
+type BinarySearchComparer func(any, any) int
 
 var ErrBinarySearchArrayNil = errors.New("Array is nil")
 var ErrBinarySearchLengthNeedNonNegNum = errors.New("Length need non-negative number")
 var ErrBinarySearchInvalidOffLen = errors.New("Invalid offset or length")
 
-func BinarySearch(array []interface{}, index int, length int, value interface{}, comparer BinarySearchComparer) (int, error) {
+func BinarySearch(array []any, index int, length int, value any, comparer BinarySearchComparer) (int, error) {
 	if array == nil {
 		return -1, ErrBinarySearchArrayNil
 	}

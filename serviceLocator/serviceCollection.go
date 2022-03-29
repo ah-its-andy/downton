@@ -5,54 +5,36 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/ah-its-andy/downton/core"
 )
 
-type ServiceCollection interface {
-	AddService(serviceInfo *ServiceInfo)
-	AddLifetimeService(service any, lifetime int)
-	AddSingleton(service any)
-	AddScope(service any)
-	AddTransient(service any)
-
-	Build() ServiceScope
-}
-
-type ServiceInfo struct {
-	ServiceType reflect.Type
-	Lifetime    int
-
-	references []*ServiceReference
-}
-
-type ServiceReference struct {
-	ReferenceType reflect.Type
-	FieldName     string
-}
-
 type svcCollection struct {
-	services map[string]*ServiceInfo
+	services map[string]*core.ServiceInfo
 }
 
-func NewServiceCollection() ServiceCollection {
+func NewServiceCollection() core.ServiceCollection {
 	return &svcCollection{
-		services: make(map[string]*ServiceInfo),
+		services: make(map[string]*core.ServiceInfo),
 	}
 }
 
-func (services *svcCollection) AddService(serviceInfo *ServiceInfo) {
-	serviceName := getTypeFullName(serviceInfo.ServiceType)
+func (services *svcCollection) AddService(serviceInfo *core.ServiceInfo) {
+	if serviceInfo.ServiceName == "" {
+		serviceInfo.ServiceName = getTypeFullName(serviceInfo.ServiceType)
+	}
 	if serviceInfo.ServiceType.Kind() != reflect.Ptr {
-		panic(fmt.Sprintf("Service type must be a pointer type, but %s is %s", serviceName, serviceInfo.ServiceType.String()))
+		panic(fmt.Sprintf("Service type must be a pointer type, but %s is %s", serviceInfo.ServiceName, serviceInfo.ServiceType.String()))
 	}
 
-	if _, ok := services.services[serviceName]; ok {
-		panic(fmt.Sprintf("service %s already registered", serviceName))
+	if _, ok := services.services[serviceInfo.ServiceName]; ok {
+		panic(fmt.Sprintf("service %s already registered", serviceInfo.ServiceName))
 	}
-	services.services[serviceName] = serviceInfo
+	services.services[serviceInfo.ServiceName] = serviceInfo
 }
 
 func (services *svcCollection) AddLifetimeService(service any, lifetime int) {
-	serviceInfo := &ServiceInfo{
+	serviceInfo := &core.ServiceInfo{
 		ServiceType: reflect.TypeOf(service),
 		Lifetime:    lifetime,
 	}
@@ -77,7 +59,7 @@ func (services *svcCollection) buildServiceDependencies() {
 	}
 }
 
-func (services *svcCollection) checkCycleReferences(serviceName string, references []*ServiceReference, path string) error {
+func (services *svcCollection) checkCycleReferences(serviceName string, references []*core.ServiceReference, path string) error {
 	pathList := make([]string, 0)
 	if path != "" {
 		pathList = append(pathList, path)
@@ -90,7 +72,7 @@ func (services *svcCollection) checkCycleReferences(serviceName string, referenc
 			return errors.New(fmt.Sprintf("%s has a cycle reference to %s", curPath, dependsServiceName))
 		}
 		if dependsServiceInfo, ok := services.services[dependsServiceName]; ok {
-			err := services.checkCycleReferences(serviceName, dependsServiceInfo.references, curPath)
+			err := services.checkCycleReferences(serviceName, dependsServiceInfo.References, curPath)
 			if err != nil {
 				return err
 			}
@@ -101,10 +83,10 @@ func (services *svcCollection) checkCycleReferences(serviceName string, referenc
 	return nil
 }
 
-func (services *svcCollection) Build() ServiceScope {
+func (services *svcCollection) Build() core.ServiceScope {
 	services.buildServiceDependencies()
 	for serviceName, serviceInfo := range services.services {
-		err := services.checkCycleReferences(serviceName, serviceInfo.references, "")
+		err := services.checkCycleReferences(serviceName, serviceInfo.References, "")
 		if err != nil {
 			panic(err)
 		}
@@ -114,7 +96,7 @@ func (services *svcCollection) Build() ServiceScope {
 	}
 }
 
-func resolveServiceDependencies(serviceInfo *ServiceInfo) {
+func resolveServiceDependencies(serviceInfo *core.ServiceInfo) {
 	elemType := getElemType(serviceInfo.ServiceType)
 	for i := 0; i < elemType.NumField(); i++ {
 		field := elemType.Field(i)
@@ -124,7 +106,14 @@ func resolveServiceDependencies(serviceInfo *ServiceInfo) {
 		if field.Tag.Get("inject") == "ignore" {
 			continue
 		}
-		serviceInfo.references = append(serviceInfo.references, &ServiceReference{
+
+		referenceName := field.Tag.Get("inject")
+		if referenceName == "" {
+			referenceName = getTypeFullName(field.Type)
+		}
+
+		serviceInfo.References = append(serviceInfo.References, &core.ServiceReference{
+			ReferenceName: referenceName,
 			ReferenceType: field.Type,
 			FieldName:     field.Name,
 		})

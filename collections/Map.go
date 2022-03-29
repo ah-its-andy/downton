@@ -1,6 +1,6 @@
 package collections
 
-type Map[K comparable, V interface{}] interface {
+type Map[K comparable, V any] interface {
 	Iterator[KvPair[K, V]]
 	Put(K, V)
 	Get(K) V
@@ -10,7 +10,7 @@ type Map[K comparable, V interface{}] interface {
 	Clear()
 }
 
-type KvPair[K interface{}, V interface{}] struct {
+type KvPair[K any, V any] struct {
 	Key   K
 	Value V
 }

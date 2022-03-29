@@ -16,12 +16,11 @@ func (builder *WebHostBuilder) Configure(f func(hosting *WebHost, services servi
 	builder.configureFunc = f
 }
 
-func (builder *WebHostBuilder) Build() *WebHost {
-	scope := builder.services.Build()
-	hosting := &WebHost{
-		rootScope: scope,
-		routeMap:  NewRouteMap(),
-	}
-	builder.configureFunc(hosting, scope)
-	return hosting
-}
+// func (builder *WebHostBuilder) Build() *WebHost {
+// 	scope := builder.services.Build()
+// 	hosting := &WebHost{
+// 		rootScope: scope,
+// 	}
+// 	builder.configureFunc(hosting, scope)
+// 	return hosting
+// }
